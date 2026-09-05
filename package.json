@@ -1,7 +1,8 @@
+json
 {
   "name": "photo-vishal-in",
-  "version": "1.3.0",
-  "description": "photo.vishal.in - photo/video upload site",
+  "version": "2.0.0",
+  "description": "photo.vishal.in - cloud-deployable with MySQL user storage",
   "main": "server.js",
   "overrides": {
     "qs": "^6.16.0",
@@ -15,6 +16,7 @@
     "express-session": "^1.18.0",
     "multer": "^1.4.5-lts.1",
     "archiver": "^7.0.1",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "mysql2": "^3.11.0"
   }
 }
