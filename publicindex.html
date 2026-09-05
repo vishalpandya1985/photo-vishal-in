@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>photo.vishal.in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f4f5fb;
+    color: #1f2937;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 22px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .logo {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .brand h1 { color: white; font-size: 1.25rem; font-weight: 600; }
+
+  .headerRight { display: flex; align-items: center; gap: 14px; }
+  #whoami { color: rgba(255,255,255,0.9); font-size: 0.82rem; }
+  #manageUsersLink {
+    color: white; text-decoration: none; font-size: 0.82rem; font-weight: 500;
+    background: rgba(255,255,255,0.18); padding: 7px 14px; border-radius: 20px;
+    transition: background 0.2s;
+  }
+  #manageUsersLink:hover { background: rgba(255,255,255,0.3); }
+  #logoutBtn {
+    border: none; background: rgba(255,255,255,0.95); color: #764ba2;
+    padding: 7px 16px; border-radius: 20px; cursor: pointer;
+    font-size: 0.82rem; font-weight: 600; font-family: inherit;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  #logoutBtn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+  .container { max-width: 940px; margin: 0 auto; padding: 28px 24px 60px; }
+
+  .tabs { display: flex; gap: 4px; background: white; padding: 6px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); width: fit-content; }
+  .tabs button {
+    border: none; background: none; padding: 9px 20px; font-size: 0.88rem;
+    color: #6b7280; cursor: pointer; border-radius: 8px; font-family: inherit; font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tabs button.active { color: white; background: linear-gradient(135deg, #667eea, #764ba2); }
+
+  #dropzone {
+    border: 2.5px dashed #c7c9f5;
+    border-radius: 16px;
+    padding: 44px 20px;
+    text-align: center;
+    color: #6b7280;
+    cursor: pointer;
+    background: white;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    margin-top: 20px;
+    font-size: 0.95rem;
+  }
+  #dropzone:hover { transform: translateY(-1px); }
+  #dropzone.dragover { border-color: #764ba2; background: #f5f3ff; color: #764ba2; }
+  #fileInput { display: none; }
+  #status { margin: 10px 4px; font-size: 0.85rem; color: #6b7280; min-height: 1.2em; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+  .toolbar label { font-size: 0.88rem; color: #4b5563; display: flex; align-items: center; gap: 6px; }
+  .toolbar button#downloadSelected {
+    border: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+    padding: 9px 18px; border-radius: 10px; cursor: pointer; font-size: 0.85rem;
+    font-family: inherit; font-weight: 500;
+    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.25);
+    transition: transform 0.15s;
+  }
+  .toolbar button#downloadSelected:hover:not(:disabled) { transform: translateY(-1px); }
+  .toolbar button#downloadSelected:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+
+  #gallery, #trashGallery {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px; margin-top: 18px;
+  }
+  .card {
+    position: relative; border-radius: 12px; overflow: hidden; background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+  .card img, .card video { width: 100%; height: 115px; object-fit: cover; display: block; background: #111; }
+  .card .meta { padding: 8px 10px; font-size: 0.72rem; color: #6b7280; }
+  .card .meta .name { display: block; word-break: break-all; color: #1f2937; font-weight: 500; margin-bottom: 2px; }
+  .card input[type="checkbox"] {
+    position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; cursor: pointer;
+    accent-color: #764ba2;
+  }
+  .card .actions { display: flex; gap: 6px; padding: 0 10px 10px; }
+  .card .actions button {
+    flex: 1; font-size: 0.7rem; padding: 6px; border: none; border-radius: 6px;
+    background: #f3f4f6; color: #374151; cursor: pointer; font-family: inherit; font-weight: 500;
+    transition: background 0.15s;
+  }
+  .card .actions button:hover { background: #e5e7eb; }
+  .card .actions button.delete { background: #fee2e2; color: #b91c1c; }
+  .card .actions button.delete:hover { background: #fecaca; }
+  .card .actions button.restore { background: #dcfce7; color: #15803d; }
+  .card .actions button.restore:hover { background: #bbf7d0; }
+  .empty { color: #9ca3af; font-size: 0.88rem; margin-top: 16px; }
+
+  .credit {
+    text-align: center; margin-top: 50px; padding-top: 20px;
+    border-top: 1px solid #e5e7eb; font-size: 0.78rem; color: #9ca3af;
+  }
+  .credit strong { color: #764ba2; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">📸</div>
+    <h1>photo.vishal.in</h1>
+  </div>
+  <div class="headerRight">
+    <span id="whoami"></span>
+    <a id="manageUsersLink" href="/admin.html" style="display:none;">👥 Manage Users</a>
+    <button id="logoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button id="tabFiles" class="active">Files</button>
+    <button id="tabTrash">Trash</button>
+  </div>
+
+  <div id="filesView">
+    <div id="dropzone">
+      📤 Drag & drop photos or videos here, or click to choose files
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+    </div>
+    <div id="status"></div>
+
+    <div class="toolbar">
+      <label><input type="checkbox" id="selectAll"> Select all</label>
+      <button id="downloadSelected" disabled>Download selected (.zip)</button>
+    </div>
+
+    <div id="gallery"></div>
+  </div>
+
+  <div id="trashView" style="display:none;">
+    <p class="empty">Deleted files land here and can be restored anytime — they're only gone for good once you click "Delete forever".</p>
+    <div id="trashGallery"></div>
+  </div>
+
+  <div class="credit">Developed by <strong>VISHAL PANDYA</strong></div>
+</div>
+
+<script>
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const status = document.getElementById('status');
+const gallery = document.getElementById('gallery');
+const trashGallery = document.getElementById('trashGallery');
+const selectAll = document.getElementById('selectAll');
+const downloadSelectedBtn = document.getElementById('downloadSelected');
+const tabFiles = document.getElementById('tabFiles');
+const tabTrash = document.getElementById('tabTrash');
+const filesView = document.getElementById('filesView');
+const trashView = document.getElementById('trashView');
+
+fetch('/me').then(res => res.json()).then(me => {
+  document.getElementById('whoami').textContent = `👤 ${me.username}`;
+  if (me.role === 'admin') {
+    document.getElementById('manageUsersLink').style.display = '';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  fetch('/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+});
+
+tabFiles.addEventListener('click', () => switchTab('files'));
+tabTrash.addEventListener('click', () => switchTab('trash'));
+
+function switchTab(tab) {
+  const isFiles = tab === 'files';
+  tabFiles.classList.toggle('active', isFiles);
+  tabTrash.classList.toggle('active', !isFiles);
+  filesView.style.display = isFiles ? '' : 'none';
+  trashView.style.display = isFiles ? 'none' : '';
+  if (!isFiles) loadTrash();
+}
+
+dropzone.addEventListener('click', () => fileInput.click());
+['dragenter', 'dragover'].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); })
+);
+['dragleave', 'drop'].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+);
+dropzone.addEventListener('drop', e => uploadFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', e => uploadFiles(e.target.files));
+
+function uploadFiles(files) {
+  if (!files.length) return;
+  const formData = new FormData();
+  for (const file of files) formData.append('files', file);
+
+  status.textContent = `Uploading ${files.length} file(s)...`;
+  fetch('/upload', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      status.textContent = `✅ Uploaded ${data.uploaded.length} file(s).`;
+      loadFiles();
+    })
+    .catch(err => { status.textContent = '❌ Upload failed: ' + err.message; });
+}
+
+function loadFiles() {
+  fetch('/files')
+    .then(res => res.json())
+    .then(data => {
+      gallery.innerHTML = '';
+      data.files.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const mediaTag = f.type === 'video'
+          ? `<video src="/files/${encodeURIComponent(f.name)}" muted></video>`
+          : `<img src="/files/${encodeURIComponent(f.name)}" alt="${f.name}">`;
+        card.innerHTML = `
+          <input type="checkbox" class="pick" data-name="${f.name}">
+          ${mediaTag}
+          <div class="meta"><span class="name">${f.name}</span>${formatSize(f.size)}</div>
+          <div class="actions">
+            <button onclick="window.location='/files/${encodeURIComponent(f.name)}'">Download</button>
+            <button class="delete" onclick="trashFile('${f.name}')">Delete</button>
+          </div>`;
+        gallery.appendChild(card);
+      });
+      bindCheckboxes();
+    });
+}
+
+function loadTrash() {
+  fetch('/trash')
+    .then(res => res.json())
+    .then(data => {
+      trashGallery.innerHTML = '';
+      if (data.files.length === 0) {
+        trashGallery.innerHTML = '<p class="empty">Trash is empty.</p>';
+        return;
+      }
+      data.files.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="meta"><span class="name">${f.name}</span>${formatSize(f.size)}</div>
+          <div class="actions">
+            <button class="restore" onclick="restoreFile('${f.name}')">Restore</button>
+            <button class="delete" onclick="permanentlyDelete('${f.name}')">Delete forever</button>
+          </div>`;
+        trashGallery.appendChild(card);
+      });
+    });
+}
+
+function bindCheckboxes() {
+  document.querySelectorAll('.pick').forEach(cb => cb.addEventListener('change', updateDownloadButton));
+  selectAll.checked = false;
+  updateDownloadButton();
+}
+
+selectAll.addEventListener('change', () => {
+  document.querySelectorAll('.pick').forEach(cb => cb.checked = selectAll.checked);
+  updateDownloadButton();
+});
+
+function updateDownloadButton() {
+  const checked = document.querySelectorAll('.pick:checked');
+  downloadSelectedBtn.disabled = checked.length === 0;
+  downloadSelectedBtn.textContent = checked.length
+    ? `Download selected (${checked.length}) as .zip`
+    : 'Download selected (.zip)';
+}
+
+downloadSelectedBtn.addEventListener('click', () => {
+  const names = Array.from(document.querySelectorAll('.pick:checked')).map(cb => cb.dataset.name);
+  if (!names.length) return;
+
+  fetch('/download-zip', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ names })
+  })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'files.zip';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+});
+
+function trashFile(name) {
+  fetch('/files/' + encodeURIComponent(name), { method: 'DELETE' })
+    .then(res => res.json())
+    .then(() => loadFiles());
+}
+
+function restoreFile(name) {
+  fetch('/trash/' + encodeURIComponent(name) + '/restore', { method: 'POST' })
+    .then(res => res.json())
+    .then(() => loadTrash());
+}
+
+function permanentlyDelete(name) {
+  if (!confirm('Delete this file forever? This cannot be undone.')) return;
+  fetch('/trash/' + encodeURIComponent(name), { method: 'DELETE' })
+    .then(res => res.json())
+    .then(() => loadTrash());
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>
