@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>photo.vishal.in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1f2937;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .bg-scene {
+    position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1;
+  }
+  .bg-scene svg { width: 100%; height: 100%; display: block; }
+
+  .topbar {
+    position: relative; z-index: 2;
+    background: transparent;
+    padding: 26px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .logo {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .brand h1 { font-family: 'Playfair Display', serif; font-style: italic; color: white; font-size: 1.4rem; font-weight: 600; text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
+
+  .headerRight { display: flex; align-items: center; gap: 14px; }
+  #whoami { color: rgba(255,255,255,0.92); font-size: 0.82rem; text-shadow: 0 1px 8px rgba(0,0,0,0.35); }
+  #manageUsersLink {
+    color: white; text-decoration: none; font-size: 0.82rem; font-weight: 500;
+    background: rgba(20,24,30,0.45); border: 1px solid rgba(255,255,255,0.22);
+    padding: 7px 14px; border-radius: 20px;
+    transition: background 0.2s; align-items: center;
+    backdrop-filter: blur(6px);
+  }
+  #manageUsersLink:hover { background: rgba(20,24,30,0.6); }
+  #logoutBtn {
+    border: none; background: rgba(255,255,255,0.95); color: #1F2A38;
+    padding: 7px 16px; border-radius: 20px; cursor: pointer;
+    font-size: 0.82rem; font-weight: 600; font-family: inherit;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  }
+  #logoutBtn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+  #logoutBtn:active { transform: scale(0.98); }
+
+  .container {
+    position: relative; z-index: 2;
+    max-width: 980px; margin: 14px auto 50px;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-radius: 26px;
+    padding: 34px 30px 42px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+  }
+
+  .tabs { display: flex; gap: 4px; background: white; padding: 6px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); width: fit-content; }
+  .tabs button {
+    border: none; background: none; padding: 9px 20px; font-size: 0.88rem;
+    color: #6b7280; cursor: pointer; border-radius: 8px; font-family: inherit; font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+  }
+  .tabs button.active { color: white; background: linear-gradient(135deg, #4F7266, #3D5A54); }
+
+  #dropzone {
+    border: 2.5px dashed #99F6E4;
+    border-radius: 16px;
+    padding: 44px 20px;
+    text-align: center;
+    color: #6b7280;
+    cursor: pointer;
+    background: white;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    margin-top: 20px;
+    font-size: 0.95rem;
+  }
+  #dropzone:hover { transform: translateY(-2px); }
+  #dropzone.dragover { border-color: #3D5A54; background: #EEF1EF; color: #3D5A54; }
+  #fileInput { display: none; }
+  #status { margin: 10px 4px; font-size: 0.85rem; color: #6b7280; min-height: 1.2em; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+  .toolbar label { font-size: 0.88rem; color: #4b5563; display: flex; align-items: center; gap: 6px; }
+  .toolbar button#downloadSelected {
+    border: none; background: linear-gradient(135deg, #4F7266, #3D5A54); color: white;
+    padding: 9px 18px; border-radius: 10px; cursor: pointer; font-size: 0.85rem;
+    font-family: inherit; font-weight: 500;
+    box-shadow: 0 4px 12px rgba(61, 90, 84, 0.25);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toolbar button#downloadSelected:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); }
+  .toolbar button#downloadSelected:active:not(:disabled) { transform: scale(0.98); }
+  .toolbar button#downloadSelected:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+
+  #gallery, #trashGallery {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px; margin-top: 18px;
+  }
+  .card {
+    position: relative; border-radius: 12px; overflow: hidden; background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-4px) scale(1.015); box-shadow: 0 10px 24px rgba(0,0,0,0.12); }
+  .card img, .card video { width: 100%; height: 115px; object-fit: cover; display: block; background: #111; }
+  .card .meta { padding: 8px 10px; font-size: 0.72rem; color: #6b7280; }
+  .card .meta .name { display: block; word-break: break-all; color: #1f2937; font-weight: 500; margin-bottom: 2px; }
+  .card input[type="checkbox"] {
+    position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; cursor: pointer;
+    accent-color: #3D5A54;
+  }
+  .card .actions { display: flex; gap: 6px; padding: 0 10px 10px; }
+  .card .actions button {
+    flex: 1; font-size: 0.7rem; padding: 6px; border: none; border-radius: 6px;
+    background: #f3f4f6; color: #374151; cursor: pointer; font-family: inherit; font-weight: 500;
+    transition: background 0.15s;
+  }
+  .card .actions button:hover { background: #e5e7eb; }
+  .card .actions button.delete { background: #fee2e2; color: #b91c1c; }
+  .card .actions button.delete:hover { background: #fecaca; }
+  .card .actions button.restore { background: #dcfce7; color: #15803d; }
+  .card .actions button.restore:hover { background: #bbf7d0; }
+  .empty { color: #9ca3af; font-size: 0.88rem; margin-top: 16px; }
+
+  .type-badge {
+    position: absolute; top: 8px; right: 8px; width: 22px; height: 22px;
+    background: rgba(0,0,0,0.45); border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .type-badge svg { width: 13px; height: 13px; }
+
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 30px 10px; color: #9ca3af;
+  }
+  .empty-state svg { margin: 0 auto 12px; display: block; }
+  .empty-state p { font-size: 0.88rem; }
+
+  #visModal {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    align-items: center; justify-content: center; z-index: 50;
+  }
+  #visModal .box {
+    background: white; border-radius: 14px; padding: 22px; width: 320px; max-height: 70vh; overflow-y: auto;
+  }
+  #visModal h3 { font-size: 1rem; margin-bottom: 4px; }
+  #visModal p { font-size: 0.8rem; color: #6b7280; margin-bottom: 14px; }
+  #visModal label { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; padding: 6px 0; }
+  #visModal .actions { display: flex; gap: 8px; margin-top: 16px; }
+  #visModal button {
+    flex: 1; padding: 9px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500;
+  }
+  #visModal .save { background: linear-gradient(135deg, #4F7266, #3D5A54); color: white; }
+  #visModal .cancel { background: #f3f4f6; color: #374151; }
+  .card .actions button.visibility { background: #F1E4E1; color: #8A5A54; }
+
+  .credit {
+    text-align: center; margin-top: 50px; padding-top: 20px;
+    border-top: 1px solid #e5e7eb; font-size: 0.78rem; color: #9ca3af;
+  }
+  .credit strong { color: #3D5A54; font-weight: 600; }
+
+  @media (max-width: 640px) {
+    .topbar { padding: 16px 16px; }
+    .brand h1 { font-size: 1.05rem; }
+    .brand .logo { width: 32px; height: 32px; }
+    .headerRight { gap: 8px; width: 100%; justify-content: space-between; }
+    #whoami { display: none; }
+    #manageUsersLink { padding: 6px 10px; font-size: 0.76rem; }
+    #logoutBtn { padding: 6px 12px; font-size: 0.76rem; }
+    .container { margin: 8px 10px 30px; border-radius: 18px; padding: 20px 16px 30px; }
+    .tabs { width: 100%; }
+    .tabs button { flex: 1; padding: 9px 8px; font-size: 0.82rem; }
+    #dropzone { padding: 30px 14px; font-size: 0.85rem; }
+    .toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+    .toolbar button#downloadSelected { width: 100%; }
+    #gallery, #trashGallery { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+    .card img, .card video { height: 95px; }
+    #visModal .box { width: 90%; max-width: 320px; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg-scene">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#151E29"/>
+          <stop offset="32%" stop-color="#3B4A5C"/>
+          <stop offset="60%" stop-color="#7C8CA0"/>
+          <stop offset="82%" stop-color="#D9A6A0"/>
+          <stop offset="100%" stop-color="#E9B87E"/>
+        </linearGradient>
+        <radialGradient id="sunGlow" cx="50%" cy="100%" r="65%">
+          <stop offset="0%" stop-color="#F2C98A" stop-opacity="0.85"/>
+          <stop offset="55%" stop-color="#E4A97E" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#E4A97E" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="vignette" cx="50%" cy="42%" r="75%">
+          <stop offset="55%" stop-color="#0B0F14" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#0B0F14" stop-opacity="0.55"/>
+        </radialGradient>
+      </defs>
+
+      <rect x="0" y="0" width="1600" height="900" fill="url(#sky)"/>
+      <ellipse cx="800" cy="640" rx="700" ry="420" fill="url(#sunGlow)"/>
+
+      <path d="M0 560 L120 500 L230 545 L340 470 L460 530 L580 480 L700 540 L820 460 L940 520 L1060 470 L1180 545 L1300 490 L1420 550 L1600 500 L1600 900 L0 900 Z"
+            fill="#8C93A3" opacity="0.55"/>
+
+      <path d="M0 620 L150 555 L280 610 L420 540 L560 605 L700 545 L860 615 L1000 550 L1140 610 L1280 555 L1420 615 L1600 570 L1600 900 L0 900 Z"
+            fill="#54606F" opacity="0.8"/>
+
+      <path d="M0 700 L140 630 L260 680 L400 620 L540 690 L680 625 L820 695 L960 630 L1100 690 L1260 630 L1400 690 L1600 645 L1600 900 L0 900 Z"
+            fill="#232D36"/>
+
+      <g fill="#141A20">
+        <g transform="translate(-20,560)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+        <g transform="translate(60,610) scale(0.8)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+        <g transform="translate(140,650) scale(0.55)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+      </g>
+
+      <g fill="#141A20">
+        <g transform="translate(1500,560)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+        <g transform="translate(1430,610) scale(0.8)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+        <g transform="translate(1370,655) scale(0.55)">
+          <rect x="34" y="230" width="10" height="90" />
+          <path d="M39 60 L0 160 L78 160 Z"/>
+          <path d="M39 110 L-6 210 L84 210 Z"/>
+          <path d="M39 165 L-14 265 L92 265 Z"/>
+        </g>
+      </g>
+
+      <rect x="0" y="0" width="1600" height="900" fill="url(#vignette)"/>
+    </svg>
+  </div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </div>
+    <h1>photo.vishal.in</h1>
+  </div>
+  <div class="headerRight">
+    <span id="whoami"></span>
+    <a id="manageUsersLink" href="/admin.html" style="display:none;">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:2px;">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>Manage Users</a>
+    <button id="logoutBtn">Log out</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button id="tabFiles" class="active">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:5px;"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Files
+    </button>
+    <button id="tabTrash">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:5px;"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Trash
+    </button>
+  </div>
+
+  <div id="filesView">
+    <div id="dropzone">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3D5A54" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block; margin:0 auto 8px;">
+      <path d="M7 18a4.6 4.6 0 0 1-1-9.1 5 5 0 0 1 9.8-1.6A4 4 0 0 1 17 15"/>
+      <path d="M12 12v7"/><path d="M9 15l3-3 3 3"/>
+    </svg>
+    Drag & drop photos or videos here, or click to choose files
+      <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+    </div>
+    <div id="status"></div>
+
+    <div class="toolbar">
+      <label><input type="checkbox" id="selectAll"> Select all</label>
+      <button id="downloadSelected" disabled>Download selected (.zip)</button>
+    </div>
+
+    <div id="gallery"></div>
+  </div>
+
+  <div id="trashView" style="display:none;">
+    <p class="empty">Deleted files land here and can be restored anytime — they're only gone for good once you click "Delete forever".</p>
+    <div id="trashGallery"></div>
+  </div>
+
+  <div class="credit">Developed by <strong>VISHAL PANDYA</strong></div>
+</div>
+
+<div id="visModal">
+  <div class="box">
+    <h3>Who can see this file?</h3>
+    <p>Leave everyone unchecked to keep it visible to all users.</p>
+    <div id="visUserList"></div>
+    <div class="actions">
+      <button class="cancel" onclick="closeVisibilityModal()">Cancel</button>
+      <button class="save" onclick="saveVisibility()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const status = document.getElementById('status');
+const gallery = document.getElementById('gallery');
+const trashGallery = document.getElementById('trashGallery');
+const selectAll = document.getElementById('selectAll');
+const downloadSelectedBtn = document.getElementById('downloadSelected');
+const tabFiles = document.getElementById('tabFiles');
+const tabTrash = document.getElementById('tabTrash');
+const filesView = document.getElementById('filesView');
+const trashView = document.getElementById('trashView');
+
+fetch('/me').then(res => res.json()).then(me => {
+  window.__isAdmin = me.role === 'admin';
+  document.getElementById('whoami').innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:4px;"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>${me.username}`;
+  if (me.role === 'admin') {
+    document.getElementById('manageUsersLink').style.display = 'inline-flex';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  fetch('/logout', { method: 'POST' }).then(() => window.location.href = '/login.html');
+});
+
+tabFiles.addEventListener('click', () => switchTab('files'));
+tabTrash.addEventListener('click', () => switchTab('trash'));
+
+function switchTab(tab) {
+  const isFiles = tab === 'files';
+  tabFiles.classList.toggle('active', isFiles);
+  tabTrash.classList.toggle('active', !isFiles);
+  filesView.style.display = isFiles ? '' : 'none';
+  trashView.style.display = isFiles ? 'none' : '';
+  if (!isFiles) loadTrash();
+}
+
+dropzone.addEventListener('click', () => fileInput.click());
+['dragenter', 'dragover'].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); })
+);
+['dragleave', 'drop'].forEach(evt =>
+  dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+);
+dropzone.addEventListener('drop', e => uploadFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', e => uploadFiles(e.target.files));
+
+function uploadFiles(files) {
+  if (!files.length) return;
+  const formData = new FormData();
+  for (const file of files) formData.append('files', file);
+
+  status.textContent = `Uploading ${files.length} file(s)...`;
+  fetch('/upload', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      status.textContent = `Uploaded ${data.uploaded.length} file(s).`;
+      loadFiles();
+    })
+    .catch(err => { status.textContent = 'Upload failed: ' + err.message; });
+}
+
+const ICON_IMAGE = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;
+const ICON_VIDEO = `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M22 8l-5 4 5 4Z"/></svg>`;
+
+function emptyStateSvg(kind) {
+  // kind: 'files' or 'trash'
+  if (kind === 'trash') {
+    return `<svg viewBox="0 0 140 120" width="120">
+      <ellipse cx="70" cy="104" rx="38" ry="6" fill="#EEF1EF"/>
+      <path d="M40 40h60l-6 58a6 6 0 0 1-6 5.5H52a6 6 0 0 1-6-5.5Z" fill="#EEF1EF" stroke="#9CB3A9" stroke-width="2"/>
+      <path d="M34 40h72" stroke="#9CB3A9" stroke-width="3" stroke-linecap="round"/>
+      <path d="M58 40l4-10h16l4 10" fill="none" stroke="#9CB3A9" stroke-width="2.5"/>
+      <path d="M60 52v34M70 52v34M80 52v34" stroke="#4F7266" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 160 120" width="140">
+    <rect x="18" y="26" width="90" height="70" rx="10" fill="#EEF1EF" stroke="#9CB3A9" stroke-width="2" transform="rotate(-6 63 61)"/>
+    <rect x="40" y="34" width="98" height="76" rx="10" fill="#ffffff" stroke="#4F7266" stroke-width="2.5"/>
+    <circle cx="60" cy="56" r="7" fill="#fbbf24"/>
+    <path d="M48 92l20-22 16 14 18-20 24 28Z" fill="#9CB3A9"/>
+    <circle cx="120" cy="26" r="15" fill="url(#emptyArrow)"/>
+    <path d="M120 32v-12M115 25l5-5 5 5" stroke="#3D5A54" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <defs><linearGradient id="emptyArrow" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#E4EAE7"/><stop offset="100%" stop-color="#ffffff"/></linearGradient></defs>
+  </svg>`;
+}
+
+function loadFiles() {
+  fetch('/files')
+    .then(res => res.json())
+    .then(data => {
+      gallery.innerHTML = '';
+      if (data.files.length === 0) {
+        gallery.innerHTML = `<div class="empty-state">${emptyStateSvg('files')}<p>No files yet — drag some in above to get started.</p></div>`;
+        bindCheckboxes();
+        return;
+      }
+      data.files.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const mediaTag = f.type === 'video'
+          ? `<video src="/files/${encodeURIComponent(f.name)}" muted></video>`
+          : `<img src="/files/${encodeURIComponent(f.name)}" alt="${f.name}">`;
+        const badge = `<span class="type-badge">${f.type === 'video' ? ICON_VIDEO : ICON_IMAGE}</span>`;
+        card.innerHTML = `
+          <input type="checkbox" class="pick" data-name="${f.name}">
+          ${badge}
+          ${mediaTag}
+          <div class="meta"><span class="name">${f.name}</span>${formatSize(f.size)}</div>
+          <div class="actions">
+            <button onclick="window.location='/files/${encodeURIComponent(f.name)}'">Download</button>
+            ${window.__isAdmin ? `<button class="visibility" onclick="openVisibilityModal('${f.name}')">Visibility</button>` : ''}
+            <button class="delete" onclick="trashFile('${f.name}')">Delete</button>
+          </div>`;
+        gallery.appendChild(card);
+      });
+      bindCheckboxes();
+    });
+}
+
+function loadTrash() {
+  fetch('/trash')
+    .then(res => res.json())
+    .then(data => {
+      trashGallery.innerHTML = '';
+      if (data.files.length === 0) {
+        trashGallery.innerHTML = `<div class="empty-state">${emptyStateSvg('trash')}<p>Trash is empty.</p></div>`;
+        return;
+      }
+      data.files.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const badge = `<span class="type-badge">${f.type === 'video' ? ICON_VIDEO : ICON_IMAGE}</span>`;
+        card.innerHTML = `
+          ${badge}
+          <div class="meta"><span class="name">${f.name}</span>${formatSize(f.size)}</div>
+          <div class="actions">
+            <button class="restore" onclick="restoreFile('${f.name}')">Restore</button>
+            <button class="delete" onclick="permanentlyDelete('${f.name}')">Delete forever</button>
+          </div>`;
+        trashGallery.appendChild(card);
+      });
+    });
+}
+
+function bindCheckboxes() {
+  document.querySelectorAll('.pick').forEach(cb => cb.addEventListener('change', updateDownloadButton));
+  selectAll.checked = false;
+  updateDownloadButton();
+}
+
+selectAll.addEventListener('change', () => {
+  document.querySelectorAll('.pick').forEach(cb => cb.checked = selectAll.checked);
+  updateDownloadButton();
+});
+
+function updateDownloadButton() {
+  const checked = document.querySelectorAll('.pick:checked');
+  downloadSelectedBtn.disabled = checked.length === 0;
+  downloadSelectedBtn.textContent = checked.length
+    ? `Download selected (${checked.length}) as .zip`
+    : 'Download selected (.zip)';
+}
+
+downloadSelectedBtn.addEventListener('click', () => {
+  const names = Array.from(document.querySelectorAll('.pick:checked')).map(cb => cb.dataset.name);
+  if (!names.length) return;
+
+  fetch('/download-zip', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ names })
+  })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'files.zip';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+});
+
+function trashFile(name) {
+  fetch('/files/' + encodeURIComponent(name), { method: 'DELETE' })
+    .then(res => res.json())
+    .then(() => loadFiles());
+}
+
+function restoreFile(name) {
+  fetch('/trash/' + encodeURIComponent(name) + '/restore', { method: 'POST' })
+    .then(res => res.json())
+    .then(() => loadTrash());
+}
+
+function permanentlyDelete(name) {
+  if (!confirm('Delete this file forever? This cannot be undone.')) return;
+  fetch('/trash/' + encodeURIComponent(name), { method: 'DELETE' })
+    .then(res => res.json())
+    .then(() => loadTrash());
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// --- Visibility modal (admin only) ---
+let __currentVisFile = null;
+
+function openVisibilityModal(fileName) {
+  __currentVisFile = fileName;
+  Promise.all([
+    fetch('/admin/users').then(r => r.json()),
+    fetch('/admin/files/' + encodeURIComponent(fileName) + '/visibility').then(r => r.json())
+  ]).then(([usersData, visData]) => {
+    const allowed = new Set(visData.allowedUsers || []);
+    const listEl = document.getElementById('visUserList');
+    listEl.innerHTML = '';
+    usersData.users.forEach(u => {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" value="${u.username}" ${allowed.has(u.username) ? 'checked' : ''}> ${u.username} (${u.role})`;
+      listEl.appendChild(label);
+    });
+    document.getElementById('visModal').style.display = 'flex';
+  });
+}
+
+function closeVisibilityModal() {
+  document.getElementById('visModal').style.display = 'none';
+  __currentVisFile = null;
+}
+
+function saveVisibility() {
+  if (!__currentVisFile) return;
+  const checked = Array.from(document.querySelectorAll('#visUserList input:checked')).map(cb => cb.value);
+  fetch('/admin/files/' + encodeURIComponent(__currentVisFile) + '/visibility', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ allowedUsers: checked })
+  })
+    .then(res => res.json())
+    .then(() => {
+      closeVisibilityModal();
+      loadFiles();
+    });
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>
