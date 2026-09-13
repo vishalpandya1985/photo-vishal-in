@@ -114,6 +114,9 @@ app.use(session({
 function requireLogin(req, res, next) {
   if (req.session && req.session.username) return next();
   if (req.path === '/login' || req.path === '/login.html') return next();
+  // PWA files must be reachable even when logged out, so the browser can
+  // install the app and show the icon before anyone has signed in.
+  if (req.path === '/manifest.json' || req.path === '/sw.js' || req.path.startsWith('/icons/')) return next();
   if (req.method === 'GET') return res.redirect('/login.html');
   return res.status(401).json({ error: 'Not logged in.' });
 }
