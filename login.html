@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>photo.vishal.in - Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    color: #12182A;
+    background: #050505;
+  }
+
+  .bg-scene { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; }
+  .bg-scene svg { width: 100%; height: 100%; display: block; }
+
+  .topnav {
+    position: relative; z-index: 2;
+    padding: 28px 40px;
+  }
+  .topnav .wordmark {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.85rem;
+    color: rgba(255,255,255,0.92); letter-spacing: 0.16em; text-transform: uppercase;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.7);
+  }
+
+  .stage {
+    position: relative; z-index: 2;
+    min-height: calc(100vh - 90px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px 20px 60px;
+  }
+  .stage::before {
+    content: "";
+    position: absolute;
+    top: -10%; left: 50%; transform: translateX(-50%);
+    width: min(700px, 130%); height: 120%;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0) 80%);
+    z-index: -1;
+  }
+
+  .rule { width: 46px; height: 2px; background: rgba(255,255,255,0.6); margin: 0 auto 22px; }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    letter-spacing: 0.02em;
+    line-height: 1.08;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.6);
+    margin-bottom: 16px;
+  }
+  .subtitle {
+    color: rgba(255,255,255,0.78);
+    font-size: 0.95rem;
+    max-width: 400px;
+    margin: 0 auto 40px;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.65);
+  }
+
+  form { width: 100%; max-width: 300px; display: flex; flex-direction: column; gap: 18px; }
+  .field { text-align: left; }
+  .field label {
+    display: block; font-family: 'Space Grotesk', sans-serif; font-weight: 500;
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.7); margin-bottom: 7px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  }
+  .field input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(255,255,255,0.4);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    padding: 8px 2px;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+  .field input::placeholder { color: rgba(255,255,255,0.4); }
+  .field input:focus { border-bottom-color: #fff; }
+
+  .pw-wrap { position: relative; }
+  .pw-wrap input { padding-right: 30px; }
+  .pw-toggle {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    background: none; border: none; padding: 4px; margin: 0;
+    color: rgba(255,255,255,0.55); cursor: pointer; display: flex;
+    box-shadow: none; width: auto;
+  }
+  .pw-toggle:hover { color: #fff; background: none; transform: translateY(-50%); }
+  .pw-toggle:active { transform: translateY(-50%); }
+
+  button {
+    margin-top: 12px;
+    background: #fff;
+    color: #12182A;
+    border: 1.5px solid #fff;
+    padding: 13px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  button:hover { background: transparent; color: #fff; transform: translateY(-2px); }
+  button:active { transform: translateY(0); }
+
+  .error {
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    margin-bottom: 2px;
+    display: none;
+  }
+  .error.show { display: block; }
+
+  .forgot { margin-top: 18px; font-size: 0.76rem; color: rgba(255,255,255,0.65); text-shadow: 0 1px 8px rgba(0,0,0,0.6); }
+
+  .credit {
+    position: relative; z-index: 2;
+    text-align: center; padding-bottom: 26px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+  }
+  .credit strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+
+  @media (max-width: 480px) {
+    .topnav { padding: 20px 22px; }
+    .stage { padding: 10px 18px 40px; }
+    h1 { font-size: 2rem; }
+    .subtitle { font-size: 0.88rem; margin-bottom: 30px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg-scene">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="navyBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0C1220"/>
+          <stop offset="100%" stop-color="#050710"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="1600" height="900" fill="url(#navyBg)"/>
+      <path d="M -100,0 L 260,0 C 260,56 298,56 298,112 C 298,169 309,169 309,225 C 309,281 286,281 286,338 C 286,394 245,394 245,450 C 245,506 214,506 214,562 C 214,619 215,619 215,675 C 215,731 248,731 248,788 C 248,844 289,844 289,900 L -100,900 Z" fill="#9BA6C4"/>
+      <path d="M -100,0 L 341,0 C 341,56 365,56 365,112 C 365,169 350,169 350,225 C 350,281 307,281 307,338 C 307,394 266,394 266,450 C 266,506 256,506 256,562 C 256,619 284,619 284,675 C 284,731 330,731 330,788 C 330,844 362,844 362,900 L -100,900 Z" fill="#6B7BA0"/>
+      <path d="M -100,0 L 427,0 C 427,56 424,56 424,112 C 424,169 391,169 391,225 C 391,281 350,281 350,338 C 350,394 330,394 330,450 C 330,506 345,506 345,562 C 345,619 385,619 385,675 C 385,731 421,731 421,788 C 421,844 428,844 428,900 L -100,900 Z" fill="#3F4E76"/>
+      <path d="M -100,0 L 493,0 C 493,56 467,56 467,112 C 467,169 429,169 429,225 C 429,281 406,281 406,338 C 406,394 414,394 414,450 C 414,506 447,506 447,562 C 447,619 482,619 482,675 C 482,731 495,731 495,788 C 495,844 476,844 476,900 L -100,900 Z" fill="#232E4A"/>
+
+      <rect x="0" y="0" width="1600" height="900" fill="#000000" opacity="0.25"/>
+    </svg>
+  </div>
+
+  <div class="topnav">
+    <span class="wordmark">photo.vishal.in</span>
+  </div>
+
+  <div class="stage">
+    <div class="rule"></div>
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Sign in to reach your photos and videos, kept safe in one place.</p>
+
+    <form method="POST" action="/login">
+      <div class="error" id="error">Incorrect username or password.</div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter username" required autofocus>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" name="password" placeholder="Enter password" required>
+          <button type="button" class="pw-toggle" onclick="togglePw('loginPassword', this)" aria-label="Show password">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit">Log In</button>
+    </form>
+    <p class="forgot">Forgot password? Contact your administrator.</p>
+  </div>
+
+  <div class="credit">Developed by <strong>Vishal Pandya</strong></div>
+
+  <script>
+    function playBuzz(notes) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let t = ctx.currentTime;
+        notes.forEach(([freq, dur]) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(0.9, t + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + dur + 0.03);
+          t += dur * 0.7;
+        });
+      } catch (e) { /* audio blocked or unsupported — fail silently */ }
+    }
+    function playErrorSound() { playBuzz([[196.00, 0.13], [146.83, 0.13], [196.00, 0.13], [146.83, 0.22]]); }
+
+    if (new URLSearchParams(window.location.search).get('error')) {
+      document.getElementById('error').classList.add('show');
+      playErrorSound();
+    }
+
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      btn.innerHTML = showing
+        ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a20.6 20.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a20.6 20.6 0 0 1-2.68 3.87M14.12 14.12A3 3 0 1 1 9.88 9.88"/><path d="M1 1l22 22"/></svg>';
+    }
+  </script>
+</body>
+</html>
